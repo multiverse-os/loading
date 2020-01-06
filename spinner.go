@@ -39,11 +39,11 @@ func (self *LoadingSpinner) Cancel() {
 }
 
 func (self *LoadingSpinner) Complete(message string) {
+	self.end <- true
 	fmt.Print(EraseLine(2))
 	fmt.Print(ShowCursor())
 	fmt.Print(CursorStart(1))
 	fmt.Println(message)
-	self.end <- true
 }
 
 func (self *LoadingSpinner) Animate() {
