@@ -1,8 +1,8 @@
-package dots
+package circles
 
 import (
-	color "github.com/multiverse-os/cli/text/ansi/color"
-	loading "github.com/multiverse-os/cli/text/loading"
+	color "github.com/multiverse-os/color"
+	loading "github.com/multiverse-os/loading"
 )
 
 var Style = loading.BarStyle{

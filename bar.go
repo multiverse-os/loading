@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	color "github.com/multiverse-os/cli/text/ansi/color"
+	color "github.com/multiverse-os/color"
 )
 
 type LoadingBar struct {

@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	loading "github.com/multiverse-os/cli/text/loading"
-	moon "github.com/multiverse-os/cli/text/loading/spinners/moon"
+	loading "github.com/multiverse-os/loading"
+	moon "github.com/multiverse-os/loading/spinners/moon"
 )
 
 func randomWait() {
