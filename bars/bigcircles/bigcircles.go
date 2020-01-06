@@ -7,7 +7,7 @@ import (
 
 // ⬤◯◯◯◯◯◯◯◯◯ 9%
 var Style = loading.BarStyle{
-	Fill:     []string{color.Silver("⬤ "), color.White("⬤ ")},
+	Fill:     []string{color.Aqua("⬤ "), color.White("⬤ ")},
 	Unfilled: color.Gray("◯ "),
 	Format:   " %s%s %0.2f%% %s",
 }
