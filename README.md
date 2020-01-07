@@ -54,6 +54,12 @@ initialized, configred, and started from a single line of code.
 Keep in mind, that you do not need to initialize new spinner objects, you can 
 reuse the object, change the loading message and call start again.
 
+Options are defined using function chaining, and the available options
+are:
+  1) Speed(int), with aliases spinner.(Slowest,Slow,Normal,Fast,Fastest)
+  2) Message(string)
+  3) Palette([]string), expecting ansi colors to cycle through
+
 This example is included in the `/examples/` folder of the repository. 
 
 
@@ -91,24 +97,47 @@ func main() {
 }
 ```
 
-Options are defined using function chaining, and the available options
-are:
-  1) Speed(int), with aliases spinner.(Slowest,Slow,Normal,Fast,Fastest)
-  2) Message(string)
-  3) Palette([]string), expecting ansi colors to cycle through
-
-Currently there are only six (6) available spinner options
+Currently there are only five available spinner options
 any pull requests for additional spinners will be reviewed
 and accepted if the code is consistent with the existing
 library codebase. Pull requests welcome.
 Loader Animation Options:
   1) circle.Animation   ["◐","◓", "◑", "◒"]
-  2) clock.Animation    ["🕐","🕑","🕒","🕓",...]
   3) dots.Animation     ["⠋","⠙","⠹","⠸",...]
   4) lines.Animation    ["-","\","|","/"]
   5) moon.Animation     ["🌑","🌒","🌓","🌔",...]
   6) triangle.Animation ["◢","◣","◤","◥"]
 
+Or, a custom set of characters can be used:
+
+```Go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/multiverse-os/color"
+	"github.com/multiverse-os/loading"
+)
+
+func main() {
+	chars := []string{
+		color.OliveBg(color.Black("♠")),
+		color.OliveBg(color.Red("♥")),
+		color.OliveBg(color.Green("♣")),
+		color.OliveBg(color.Blue("♦")),
+	}
+
+	fmt.Println("Spinner Example")
+	fmt.Println("==============")
+	suits := loading.Spinner(chars).Message("Loading...").Speed(loading.Slow).Start()
+	time.Sleep(5 * time.Second)
+	suits.Complete(color.Green("Loading Complete!"))
+}
+```
+
 To provide a more interactive UI, messages, speed and even palette can
 be updated while the spinner animation is active to provide updates
 which lets the user know the program is not frozen.
+

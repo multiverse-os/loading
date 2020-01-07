@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/multiverse-os/color"
@@ -10,13 +9,19 @@ import (
 	"github.com/multiverse-os/loading/spinners/triangle"
 )
 
+const WAIT = 5
+
 func main() {
 	fmt.Println("Rainbow Spinner Example")
 	fmt.Println("==============")
 	rainbow := makeRainbow()
 	rainbowDots := loading.Spinner(triangle.Animation).Message("Loading...").Speed(loading.Normal).Palette(rainbow).Start()
-	randomWait()
+	time.Sleep(WAIT * time.Second)
 	rainbowDots.Complete(color.Green("Loading Complete!"))
+
+	fmt.Println("Custom Spinner Example")
+	fmt.Println("==============")
+	customSpinner()
 }
 
 func makeRainbow() []string {
@@ -30,6 +35,15 @@ func makeRainbow() []string {
 	return rainbow
 }
 
-func randomWait() {
-	time.Sleep(time.Duration(rand.Intn(2)+2) * time.Second)
+func customSpinner() {
+	chars := []string{
+		color.OliveBg(color.Black("♠")),
+		color.OliveBg(color.Red("♥")),
+		color.OliveBg(color.Green("♣")),
+		color.OliveBg(color.Blue("♦")),
+	}
+
+	suits := loading.Spinner(chars).Message("Loading...").Speed(loading.Slow).Start()
+	time.Sleep(WAIT * time.Second)
+	suits.Complete(color.Green("Loading Complete!"))
 }
