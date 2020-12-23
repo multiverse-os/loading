@@ -5,15 +5,15 @@ import (
 	"math/rand"
 	"time"
 
-	color "github.com/multiverse-os/cli/text/ansi/color"
-	loading "github.com/multiverse-os/cli/text/loading"
-	bigcircles "github.com/multiverse-os/cli/text/loading/bars/bigcircles"
-	blocks "github.com/multiverse-os/cli/text/loading/bars/blocks"
-	circles "github.com/multiverse-os/cli/text/loading/bars/circles"
-	dots "github.com/multiverse-os/cli/text/loading/bars/dots"
-	rectangles "github.com/multiverse-os/cli/text/loading/bars/rectangles"
-	squares "github.com/multiverse-os/cli/text/loading/bars/squares"
-	thinblocks "github.com/multiverse-os/cli/text/loading/bars/thinblocks"
+	color "github.com/multiverse-os/cli/terminal/ansi/color"
+	loading "github.com/multiverse-os/cli/terminal/loading"
+	bigcircles "github.com/multiverse-os/cli/terminal/loading/bars/bigcircles"
+	blocks "github.com/multiverse-os/cli/terminal/loading/bars/blocks"
+	circles "github.com/multiverse-os/cli/terminal/loading/bars/circles"
+	dots "github.com/multiverse-os/cli/terminal/loading/bars/dots"
+	rectangles "github.com/multiverse-os/cli/terminal/loading/bars/rectangles"
+	squares "github.com/multiverse-os/cli/terminal/loading/bars/squares"
+	thinblocks "github.com/multiverse-os/cli/terminal/loading/bars/thinblocks"
 )
 
 func main() {
