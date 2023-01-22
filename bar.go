@@ -27,8 +27,8 @@ type BarAnimation struct {
 	Format         string
 }
 
-func (self *Bar) DefaultBarAnimation() *Bar {
-	return self.Animation(BarAnimation{
+func (bar *Bar) DefaultBarAnimation() *Bar {
+	return bar.Animation(BarAnimation{
 		AnimationSpeed: Slowest,
 		Status:         "Loading...",
 		HidePercent:    false,
@@ -44,9 +44,9 @@ func (self *Bar) DefaultBarAnimation() *Bar {
 // "BackgruondMusic" and another folder named "HoldMusic" our design comes to to
 // the essential concept that we would create a folder named Music and within it
 // have music files ,and Background folder and Hold folder.
-func (self *Bar) TerminalWidth() *Bar {
+func (bar *Bar) TerminalWidth() *Bar {
 	terminalWidth := TerminalWidth()
-	return self.Width(terminalWidth)
+	return bar.Width(terminalWidth)
 }
 
 // TODO: Refer to NewSpinner() whjere animation is taken in at initiation as a
@@ -58,6 +58,7 @@ func (self *Bar) TerminalWidth() *Bar {
 
 func NewBar(animation BarAnimation) *Bar {
 	bar := &Bar{
+		width:         80,
 		animationTick: 0,
 		ticker:        time.NewTicker(time.Millisecond * time.Duration(Fastest)),
 		end:           make(chan bool),
@@ -68,124 +69,126 @@ func NewBar(animation BarAnimation) *Bar {
 	return bar
 }
 
-func (self *Bar) HidePercent(hide bool) *Bar {
-	self.animation.HidePercent = hide
-	return self
+func (bar *Bar) HidePercent(hide bool) *Bar {
+	bar.animation.HidePercent = hide
+	return bar
 }
 
-func (self *Bar) Animation(animation BarAnimation) *Bar {
+func (bar *Bar) Animation(animation BarAnimation) *Bar {
 	if len(animation.Status) > 0 {
-		self.animation.Status = animation.Status
+		bar.animation.Status = animation.Status
 	}
 	if len(animation.Format) > 0 {
-		self.animation.Format = animation.Format
+		bar.animation.Format = animation.Format
 	}
 	if len(animation.Fill) > 0 {
-		self.animation.Fill = animation.Fill
+		bar.animation.Fill = animation.Fill
 	}
 	if len(animation.Unfilled) > 0 {
-		self.animation.Unfilled = animation.Unfilled
+		bar.animation.Unfilled = animation.Unfilled
 	}
-	self.animation = animation
-	return self
+	bar.animation = animation
+	return bar
 }
 
-func (self *Bar) Width(width int) *Bar {
-	self.width = float64(width)
-	return self
+func (bar *Bar) Width(width int) *Bar {
+	bar.width = float64(width)
+	return bar
 }
 
-func (self *Bar) Fill(characters ...string) *Bar {
-	self.animation.Fill = characters
-	return self
+func (bar *Bar) Fill(characters ...string) *Bar {
+	bar.animation.Fill = characters
+	return bar
 }
 
-func (self *Bar) Unfilled(character string) *Bar {
-	self.animation.Unfilled = character
-	return self
+func (bar *Bar) Unfilled(character string) *Bar {
+	bar.animation.Unfilled = character
+	return bar
 }
 
-func (self *Bar) Status(message string) *Bar {
-	self.animation.Status = message
-	return self
+func (bar *Bar) Status(message string) *Bar {
+	bar.animation.Status = message
+	return bar
 }
 
-func (self *Bar) Start() {
-	fmt.Print(self.Frame())
-	go self.Animate()
+func (bar *Bar) Start() {
+	fmt.Print(bar.Frame())
+	go bar.Animate()
 }
 
-func (self Bar) incrementSize() float64 { return float64(self.width) / 100.00 }
-func (self Bar) remainingTicks() int    { return int(self.width) - int(self.progress) }
-func (self Bar) percent() float64       { return (self.progress / self.width) * 100 }
+func (bar Bar) incrementSize() float64 { return float64(bar.width) / 100.00 }
+func (bar Bar) remainingTicks() int    { return int(bar.width) - int(bar.progress) }
+func (bar Bar) percent() float64       { return (bar.progress / bar.width) * 100 }
 
-func (self Bar) filled() string {
-	if len(self.animation.Fill) == 0 {
-		self.DefaultBarAnimation()
+func (bar Bar) filled() string {
+	if len(bar.animation.Fill) == 0 {
+		bar.DefaultBarAnimation()
 	}
-	fill := strings.Repeat(self.animation.Fill[len(self.animation.Fill)-1], int(self.progress))
-	if self.progress == self.width {
+	fill := strings.Repeat(bar.animation.Fill[len(bar.animation.Fill)-1], int(bar.progress))
+	if bar.progress == bar.width {
 		return fill
-	} else if len(self.animation.Fill) > 1 {
-		if (len(self.animation.Fill) - 1) == self.animationTick {
-			self.animationTick = 0
+	} else if len(bar.animation.Fill) > 1 {
+		if (len(bar.animation.Fill) - 1) == bar.animationTick {
+			bar.animationTick = 0
 		}
-		fill += self.animation.Fill[self.animationTick]
-		self.animationTick++
+		fill += bar.animation.Fill[bar.animationTick]
+		bar.animationTick++
 	}
 	return fill
 }
 
-func (self Bar) unfilled() string {
-	return strings.Repeat(self.animation.Unfilled, self.remainingTicks())
+func (bar Bar) unfilled() string {
+	return strings.Repeat(bar.animation.Unfilled, bar.remainingTicks())
 
 }
-func (self Bar) BarWidth(terminalWidth int) int {
-	return terminalWidth - (len(self.animation.Format) + len(self.animation.Status) + 10)
+func (bar Bar) BarWidth(terminalWidth int) int {
+	return terminalWidth - (len(bar.animation.Format) + len(bar.animation.Status) + 10)
 }
 
-func (self *Bar) Increment(progress int) (completed bool) {
-	if self.progress >= self.width {
-		self.progress = self.width
+func (bar *Bar) Increment(progress int) (completed bool) {
+	fmt.Printf("frame+1")
+	if bar.progress >= bar.width {
+		bar.progress = bar.width
 		completed = true
 	} else {
-		self.progress += (float64(progress) * self.incrementSize())
+		bar.progress += (float64(progress) * bar.incrementSize())
 		completed = false
 	}
-	self.increment <- true
+	bar.increment <- true
 	return completed
 }
 
-func (self *Bar) Frame() string {
+func (bar *Bar) Frame() string {
+	fmt.Printf("frame+1")
 	fmt.Print(HideCursor())
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
-	if self.animation.HidePercent {
-		self.animation.Format = strings.Replace(self.animation.Format, "%0.2f%%", "", -1)
-		return fmt.Sprintf(self.animation.Format, self.filled(), self.unfilled(), self.Status)
+	if bar.animation.HidePercent {
+		bar.animation.Format = strings.Replace(bar.animation.Format, "%0.2f%%", "", -1)
+		return fmt.Sprintf(bar.animation.Format, bar.filled(), bar.unfilled(), bar.Status)
 	} else {
-		return fmt.Sprintf(self.animation.Format, self.filled(), self.unfilled(), self.percent(), self.animation.Status)
+		return fmt.Sprintf(bar.animation.Format, bar.filled(), bar.unfilled(), bar.percent(), bar.animation.Status)
 	}
 }
 
-func (self *Bar) Animate() {
+func (bar *Bar) Animate() {
 	for {
 		select {
-		case <-self.end:
+		case <-bar.end:
 			fmt.Printf("\n")
 			return
-		case <-self.increment:
-			fmt.Print(self.Frame())
-		case <-self.ticker.C:
-			fmt.Print(self.Frame())
+		case <-bar.increment:
+			fmt.Print(bar.Frame())
+		case <-bar.ticker.C:
+			fmt.Print(bar.Frame())
 		}
 	}
 }
 
-func (self *Bar) End() {
-	self.progress = self.width
+func (bar *Bar) End() {
+	bar.progress = bar.width
 	fmt.Print(EraseLine(2))
 	fmt.Print(ShowCursor())
 	fmt.Print(CursorStart(1))
-	self.end <- true
+	bar.end <- true
 }
