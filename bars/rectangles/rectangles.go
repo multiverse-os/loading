@@ -1,8 +1,8 @@
 package rectangles
 
 import (
-	color "github.com/multiverse-os/cli/terminal/ansi/color"
-	loading "github.com/multiverse-os/cli/terminal/loading"
+	color "github.com/multiverse-os/ansi/color"
+	loading "github.com/multiverse-os/loading"
 )
 
 // ▰▰▰▰▱▱▱▱▱▱ 41%
