@@ -5,63 +5,50 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/multiverse-os/ansi/color"
 	loading "github.com/multiverse-os/loading"
-
-	bigcircles "github.com/multiverse-os/loading/bars/bigcircles"
-	blocks "github.com/multiverse-os/loading/bars/blocks"
-	circles "github.com/multiverse-os/loading/bars/circles"
-	dots "github.com/multiverse-os/loading/bars/dots"
-	rectangles "github.com/multiverse-os/loading/bars/rectangles"
-	squares "github.com/multiverse-os/loading/bars/squares"
-	thinblocks "github.com/multiverse-os/loading/bars/thinblocks"
-
-	color "github.com/multiverse-os/ansi/color"
+	"github.com/multiverse-os/loading/bars/dots"
 )
 
 func randomWait() {
-	time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second)
+	time.Sleep(time.Duration(rand.Intn(2)) * time.Second)
 }
 
 func main() {
-	fmt.Println("Loading Bar Example")
-	fmt.Println("===================")
+	fmt.Printf("Loading Bar Example\n")
+	fmt.Printf("===================\n")
 
-	fmt.Println("Running 'bigcircles' loading bar example:")
-	RunBarExample(bigcircles.Animation)
-
-	fmt.Println("Running 'thinblocks' loading bar example:")
-	RunBarExample(thinblocks.Animation)
-
-	fmt.Println("Running 'dots' loading bar example:")
+	fmt.Printf("Running 'dots' loading bar example:\n")
 	RunBarExample(dots.Animation)
 
-	fmt.Println("Running 'rectangles' loading bar example:")
-	RunBarExample(rectangles.Animation)
+	//fmt.Printf("Running 'bigcircles' loading bar example:\n")
+	//RunBarExample(bigcircles.Animation)
 
-	fmt.Println("Running 'blocks' loading bar example:")
-	RunBarExample(blocks.Animation)
+	//fmt.Printf("Running 'thinblocks' loading bar example:\n")
+	//RunBarExample(thinblocks.Animation)
 
-	fmt.Println("Running 'circle' loading bar example:")
-	RunBarExample(circles.Animation)
+	//fmt.Printf("Running 'rectangles' loading bar example:\n")
+	//RunBarExample(rectangles.Animation)
 
-	fmt.Println("Running 'squares' loading bar example:")
-	RunBarExample(squares.Animation)
+	//fmt.Printf("Running 'blocks' loading bar example:\n")
+	//RunBarExample(blocks.Animation)
+
+	//fmt.Printf("Running 'circle' loading bar example:\n")
+	//RunBarExample(circles.Animation)
+
+	//fmt.Printf("Running 'squares' loading bar example:\n")
+	//RunBarExample(squares.Animation)
 
 }
 
 func RunBarExample(animation loading.BarAnimation) {
+	//loadingBar := loading.NewBar(animation)
 	loadingBar := loading.NewBar(animation)
-	fmt.Printf("loading bar created, now running the Start() method")
 	loadingBar.Start()
 
 	for 0 < loadingBar.RemainingTicks() {
 		randomWait()
-		// TODO: Can this break condition even be hit when we use this style of
-		// while loop
-		//if loadingBar.Increment(1) {
-		//	break
-		//}
-		loadingBar.Increment(1)
+		loadingBar.Increment(2)
 	}
 	loadingBar.Status(color.Green("Completed!")).End()
 }
