@@ -8,6 +8,8 @@ const (
 	escPrefix = "\u001B["
 )
 
+// TODO: Eventually use our ANSI library potentially
+
 func render(value string) string { return (escPrefix + value) }
 
 func EraseDisplay(code int) string { return render(strconv.Itoa(code) + "2J") }

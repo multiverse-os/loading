@@ -18,6 +18,10 @@ import (
 	color "github.com/multiverse-os/ansi/color"
 )
 
+func randomWait() {
+	time.Sleep(time.Duration(rand.Intn(2)+1) * time.Second)
+}
+
 func main() {
 	fmt.Println("Loading Bar Example")
 	fmt.Println("===================")
@@ -47,12 +51,17 @@ func main() {
 
 func RunBarExample(animation loading.BarAnimation) {
 	loadingBar := loading.NewBar(animation)
+	fmt.Printf("loading bar created, now running the Start() method")
 	loadingBar.Start()
-	for i := 0; i < 100; i++ {
-		time.Sleep(time.Duration(rand.Intn(135)+22) * time.Millisecond)
-		if loadingBar.Increment(1) {
-			break
-		}
+
+	for 0 < loadingBar.RemainingTicks() {
+		randomWait()
+		// TODO: Can this break condition even be hit when we use this style of
+		// while loop
+		//if loadingBar.Increment(1) {
+		//	break
+		//}
+		loadingBar.Increment(1)
 	}
 	loadingBar.Status(color.Green("Completed!")).End()
 }

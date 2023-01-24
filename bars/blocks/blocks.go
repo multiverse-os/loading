@@ -1,4 +1,4 @@
-package dots
+package blocks
 
 import (
 	color "github.com/multiverse-os/ansi/color"

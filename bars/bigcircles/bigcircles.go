@@ -6,6 +6,8 @@ import (
 )
 
 // ⬤◯◯◯◯◯◯◯◯◯ 9%
+// TODO: Should have half filled for 1.5/100 for more complex bars for example
+// installation, transfer/download
 var Animation = loading.BarAnimation{
 	Fill:     []string{color.Silver("⬤ "), color.White("⬤ ")},
 	Unfilled: color.Gray("◯ "),

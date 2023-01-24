@@ -20,7 +20,7 @@ type Spinner struct {
 }
 
 func NewSpinner(animation []string) *Spinner {
-   return &Spinner{
+	return &Spinner{
 		animation: animation,
 		palette:   []string{""},
 		ticker:    time.NewTicker(time.Millisecond * time.Duration(Normal)),
@@ -41,7 +41,7 @@ func (self *Spinner) Cancel() {
 }
 
 func (self *Spinner) End() {
-  self.Complete("")
+	self.Complete("")
 }
 
 func (self *Spinner) Complete(message string) {
@@ -87,9 +87,11 @@ func (self *Spinner) Frame() string {
 	return self.palette[self.paletteIndex] + self.animation[self.index] + "\x1b[0m"
 }
 
-func (self *Spinner) Increment(frameCount int) bool {
+// TODO: Notice we are not even using the passed frameCount, this is
+// specifically for loading bars
+func (self *Spinner) Increment(frameCount float64) bool {
 	self.index = increment(self.index, len(self.animation))
-  return self.index != len(self.animation) 
+	return self.index != len(self.animation)
 }
 
 func increment(index, max int) int {
