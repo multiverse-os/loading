@@ -33,6 +33,7 @@ var Animation = loading.BarAnimation{
 		color.Silver("⡿"),
 		color.White("⣿"),
 	},
-	Unfilled: color.Black("⣀"),
-	Format:   " %s%s %0.2f%% %s",
+	RuneWidth: 1,
+	Unfilled:  color.Black("⣀"),
+	Format:    " %s%s %0.2f %s",
 }

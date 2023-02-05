@@ -6,8 +6,11 @@ import (
 	"time"
 )
 
+// TODO: Add a cutoff to prevent more than the length of the screen being
+// printed or at least track the number of lines so we can clear it correctly
+// and never have a condition the screen renders a new frame on a new line.
 type Bar struct {
-	length        int
+	length        uint
 	progress      float64
 	animationTick int
 	ticker        *time.Ticker
@@ -17,10 +20,11 @@ type Bar struct {
 }
 
 type BarAnimation struct {
-	AnimationSpeed int
+	AnimationSpeed uint
 	Status         string
 	HidePercent    bool
 	Fill           []string
+	RuneWidth      uint
 	Unfilled       string
 	Format         string
 }
@@ -31,7 +35,7 @@ func (bar *Bar) TerminalWidth() *Bar {
 	if TerminalWidth() < 20 {
 		return bar.Length(12)
 	} else {
-		return bar.Length(TerminalWidth() - 20)
+		return bar.Length(uint(TerminalWidth() - 20))
 	}
 }
 
@@ -40,6 +44,25 @@ func (bar *Bar) TerminalWidth() *Bar {
 // directly (but we should still be able to when we want to)
 
 func NewBar(animation BarAnimation) *Bar {
+
+	//if 0 < len(animation.Status) {
+	//	bar.animation.Status = animation.Status
+	//}
+
+	//if 0 == len(animation.Format) {
+
+	//   animation.Format = " "
+	//}
+	//	bar.animation.Format = animation.Format
+	//}
+	//if 0 < len(animation.Fill) {
+	//	bar.animation.Fill = animation.Fill
+	//}
+	//// TODO: This is redundant if we are tracking progress
+	//if 0 < len(animation.Unfilled) {
+	//	bar.animation.Unfilled = animation.Unfilled
+	//}
+
 	bar := &Bar{
 		animationTick: 0,
 		ticker:        time.NewTicker(time.Millisecond * time.Duration(Fastest)),
@@ -51,30 +74,21 @@ func NewBar(animation BarAnimation) *Bar {
 	return bar
 }
 
-func (bar *Bar) HidePercent() *Bar {
-	bar.animation.HidePercent = true
+func (bar *Bar) ShowPercent(show bool) *Bar {
+	bar.animation.HidePercent = show
 	return bar
 }
 
+// TODO: I kinda hate this function and I want to simplify it
+//
+//	this doesnt have fail conditions either, we could simply check against
+//	if the animation exists too
 func (bar *Bar) Animation(animation BarAnimation) *Bar {
-	if 0 < len(animation.Status) {
-		bar.animation.Status = animation.Status
-	}
-	if 0 < len(animation.Format) {
-		bar.animation.Format = animation.Format
-	}
-	if 0 < len(animation.Fill) {
-		bar.animation.Fill = animation.Fill
-	}
-	// TODO: This is redundant if we are tracking progress
-	if 0 < len(animation.Unfilled) {
-		bar.animation.Unfilled = animation.Unfilled
-	}
 	bar.animation = animation
 	return bar
 }
 
-func (bar *Bar) Length(length int) *Bar {
+func (bar *Bar) Length(length uint) *Bar {
 	bar.length = length
 	return bar
 }
@@ -99,45 +113,35 @@ func (bar *Bar) Start() {
 }
 
 // TODO: Remaining ticks becomes important if we use this for our while loop
-func (bar Bar) RemainingTicks() int {
+func (bar Bar) RemainingTicks() uint {
 	if float64(bar.length) <= bar.progress {
 		bar.progress = float64(bar.length)
 		return 0
 	} else {
-		return bar.length - int(bar.progress)
+		return bar.length - uint(bar.progress)
 	}
 }
 
-// TODO: Incredibly overly complicated just to have a filled version of the bar;
-// it should be the filled in version x the length
+// TODO: This is where we are failing to do the animation correctly, where
+// with dots we have more than just 1 dot and full dots.
 func (bar Bar) filled() string {
-	// TODO: Seems overly complex
-	// TODO: This is where we are failing to do the animation correctly, where
-	// with dots we have more than just 1 dot and full dots.
-	fill := strings.Repeat(bar.animation.Fill[len(bar.animation.Fill)-1], int(bar.progress))
-	// TODO: This condition is everything is filled completely?
-	//if bar.progress == float64(bar.length) {
-	//	return fill
-	//	// TODO: This is likely where our animation is failing to work now
-	//} else if 1 < len(bar.animation.Fill) {
-
-	// TODO: There is an issue with this code; this is where the animation cycling
-	// should be occuring but instead its only showing the first position of the
-	// animation or the last position of the animation; and without it we only
-	// show unfilled and last position of the animation
-
-	//if 1 < len(bar.animation.Fill) {
-	//	if (len(bar.animation.Fill) - 1) == bar.animationTick {
-	//		bar.animationTick = 0
-	//	}
-	//	fill += bar.animation.Fill[bar.animationTick]
-	//	bar.animationTick++
-	//}
+	fill := strings.Repeat(
+		bar.animation.Fill[len(bar.animation.Fill)-1],
+		int(uint(bar.progress)/bar.animation.RuneWidth),
+	)
 	return fill
 }
 
 func (bar Bar) unfilled() string {
-	return strings.Repeat(bar.animation.Unfilled, bar.RemainingTicks())
+
+	//rune, size := utf8.DecodeRune([]byte(bar.animation.Unfilled))
+
+	//runeProperties := width.LookupRune(bar.animation.Unfilled)
+
+	return strings.Repeat(
+		bar.animation.Unfilled,
+		int(bar.RemainingTicks()/bar.animation.RuneWidth),
+	)
 }
 
 func (bar Bar) percent() float64 {
@@ -160,20 +164,32 @@ func (bar *Bar) Frame() string {
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
 
+	// TODO: NOVERB is showing up after percent and would be in this frame
+	// function
+
+	// NOTE: Spinner animation at end of the loading bar
+	fill := bar.filled() + bar.animation.Fill[bar.animationTick]
+	if bar.animationTick < len(bar.animation.Fill)-1 {
+		bar.animationTick += 1
+	} else {
+		bar.animationTick = 0
+	}
+
 	// TODO: There is a simpler way of doing this where we have only 1
 	// fmt.Sprintf( and the percent is just empty)
-	if bar.animation.HidePercent {
-		return fmt.Sprintf(
-			"%v%v%v",
-			bar.filled(),
-			bar.unfilled(),
-			bar.animation.Status,
-		)
-	}
+	//if bar.animation.HidePercent {
+	//	return fmt.Sprintf(
+	//		"%v%v%v",
+	//		fill,
+	//		bar.unfilled(),
+
+	//		bar.animation.Status,
+	//	)
+	//}
 
 	return fmt.Sprintf(
 		bar.animation.Format,
-		bar.filled(),
+		fill,
 		bar.unfilled(),
 		bar.percent(),
 		bar.animation.Status,
@@ -184,6 +200,8 @@ func (bar *Bar) Frame() string {
 // increment (possibly a loadingBar.Time(15s))
 func (bar *Bar) Animate() {
 	for {
+		// TODO: A ticker here would likely use less processor but test it to
+		// guarantee this is more than a guess
 		select {
 		case <-bar.end:
 			fmt.Printf("\n")
@@ -191,7 +209,8 @@ func (bar *Bar) Animate() {
 		case <-bar.increment:
 			fmt.Print(bar.Frame())
 		case <-bar.ticker.C:
-			fmt.Print(bar.Frame())
+			fmt.Printf(bar.Frame())
+			//fmt.Print(bar.Frame())
 		}
 	}
 }

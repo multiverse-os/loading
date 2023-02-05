@@ -7,7 +7,8 @@ import (
 
 // ▉▉▋            41%
 var Animation = loading.BarAnimation{
-	Fill:     []string{"▏", "▏", "▎", "▎", "▍", "▍", "▌", "▌", "▋", "▋", "▊", "▊", "▉", "▉"},
-	Unfilled: color.Gray(" "),
-	Format:   " %s%s %0.2f%% %s",
+	Fill:      []string{"▏", "▏", "▎", "▎", "▍", "▍", "▌", "▌", "▋", "▋", "▊", "▊", "▉", "▉"},
+	Unfilled:  color.Gray(" "),
+	RuneWidth: 1,
+	Format:    " %s%s %0.2f%% %s",
 }

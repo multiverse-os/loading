@@ -6,7 +6,8 @@ import (
 )
 
 var Animation = loading.BarAnimation{
-	Fill:     []string{color.Lime("⚫")},
-	Unfilled: color.Gray("⚪"),
-	Format:   " %s%s %0.2f%% %s",
+	Fill:      []string{color.Lime("⚪")},
+	Unfilled:  color.Gray("⚫"),
+	RuneWidth: 2,
+	Format:    " %s%s %0.2f %s",
 }

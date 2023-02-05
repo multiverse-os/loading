@@ -5,21 +5,38 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/multiverse-os/ansi/color"
+	color "github.com/multiverse-os/ansi/color"
 	loading "github.com/multiverse-os/loading"
-	"github.com/multiverse-os/loading/bars/dots"
+	circles "github.com/multiverse-os/loading/bars/circles"
 )
 
 func randomWait() {
-	time.Sleep(time.Duration(rand.Intn(2)) * time.Second)
+	time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
 }
 
 func main() {
 	fmt.Printf("Loading Bar Example\n")
 	fmt.Printf("===================\n")
 
-	fmt.Printf("Running 'dots' loading bar example:\n")
-	RunBarExample(dots.Animation)
+	fmt.Printf("Running 'circles' loading bar example:\n")
+
+	animation := circles.Animation
+	//animation.Format = " %s%s %0.2f% %s%s"
+	//animation.Format = "%v%v%v"
+
+	//firstFrame := animation.Fill[0]
+
+	//firstFrameBytes := []rune(firstFrame)[0].Bytes()
+
+	//fmt.Printf("%v len(%v)", firstFrameBytes, len(firstFrameBytes))
+
+	//testFrame := "X"
+	//testFrameBytes := rune(testFrame)[0].Bytes()
+	//fmt.Printf("%v len(%v)", testFrameBytes, len(testFrameBytes))
+
+	fmt.Sprintf("Format: %v\n\n\n", animation.Format)
+
+	RunBarExample(animation)
 
 	//fmt.Printf("Running 'bigcircles' loading bar example:\n")
 	//RunBarExample(bigcircles.Animation)
@@ -43,12 +60,12 @@ func main() {
 
 func RunBarExample(animation loading.BarAnimation) {
 	//loadingBar := loading.NewBar(animation)
-	loadingBar := loading.NewBar(animation)
+	loadingBar := loading.NewBar(animation).ShowPercent(false)
 	loadingBar.Start()
 
 	for 0 < loadingBar.RemainingTicks() {
 		randomWait()
-		loadingBar.Increment(2)
+		loadingBar.Increment(1.5)
 	}
 	loadingBar.Status(color.Green("Completed!")).End()
 }

@@ -9,14 +9,14 @@ import (
 // automatically used when End() is called which is important for further
 // implementing the interface
 type Spinner struct {
-	animation    []string
-	palette      []string
-	message      string
-	index        int
-	paletteIndex int
-	ticker       *time.Ticker
-	speed        int
-	end          chan bool
+	animation     []string
+	palette       []string
+	message       string
+	animationTick int
+	paletteIndex  int
+	ticker        *time.Ticker
+	speed         int
+	end           chan bool
 }
 
 func NewSpinner(animation []string) *Spinner {
@@ -82,24 +82,24 @@ func (self *Spinner) Frame() string {
 	fmt.Print(HideCursor())
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
-	self.index = increment(self.index, len(self.animation))
+	self.animationTick = increment(self.animationTick, len(self.animation))
 	self.paletteIndex = increment(self.paletteIndex, len(self.palette))
-	return self.palette[self.paletteIndex] + self.animation[self.index] + "\x1b[0m"
+	return self.palette[self.paletteIndex] + self.animation[self.animationTick] + "\x1b[0m"
 }
 
 // TODO: Notice we are not even using the passed frameCount, this is
 // specifically for loading bars
 func (self *Spinner) Increment(frameCount float64) bool {
-	self.index = increment(self.index, len(self.animation))
-	return self.index != len(self.animation)
+	self.animationTick = increment(self.animationTick, len(self.animation))
+	return self.animationTick != len(self.animation)
 }
 
-func increment(index, max int) int {
-	index++
-	switch index {
+func increment(animationTick, max int) int {
+	animationTick++
+	switch animationTick {
 	case max:
 		return 0
 	default:
-		return index
+		return animationTick
 	}
 }
