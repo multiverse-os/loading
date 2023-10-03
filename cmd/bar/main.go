@@ -6,12 +6,13 @@ import (
 	"time"
 
 	color "github.com/multiverse-os/ansi/color"
+
 	loading "github.com/multiverse-os/loading"
 	circles "github.com/multiverse-os/loading/bars/circles"
 )
 
 func randomWait() {
-	time.Sleep(time.Duration(rand.Intn(5)+5) * time.Second)
+	time.Sleep(time.Duration(rand.Intn(1)+2) * time.Second)
 }
 
 func main() {
