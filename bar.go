@@ -2,31 +2,39 @@ package loading
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
+
+	width "golang.org/x/text/width"
 )
 
 // TODO: Add a cutoff to prevent more than the length of the screen being
 // printed or at least track the number of lines so we can clear it correctly
 // and never have a condition the screen renders a new frame on a new line.
 type Bar struct {
-	length        uint
-	progress      float64
-	animationTick int
-	ticker        *time.Ticker
-	end           chan bool
-	increment     chan bool
-	animation     BarAnimation
+	format         string
+	length         uint
+	progress       float64
+	animationTick  int
+	ticker         *time.Ticker
+	end            chan bool
+	increment      chan bool
+	runeWidth      uint
+	frames         map[string][]string
+	speed          uint
+	status         string
+	percentVisible bool
 }
 
-type BarAnimation struct {
-	AnimationSpeed uint
-	Status         string
-	HidePercent    bool
-	Fill           []string
-	RuneWidth      uint
-	Unfilled       string
-	Format         string
+func FormatWithPercent() string    { return " %s%s %0.2f%% %s" }
+func FormatWithoutPercent() string { return " %s%s %s" }
+
+func UndefinedBar() map[string][]string {
+	return map[string][]string{
+		"fill":     []string{},
+		"unfilled": []string{},
+	}
 }
 
 // TODO: This needs to take into consideration if there is a status or percent
@@ -43,48 +51,59 @@ func (bar *Bar) TerminalWidth() *Bar {
 // have a simple interface with it and we don't have to deal with the loop
 // directly (but we should still be able to when we want to)
 
-func NewBar(animation BarAnimation) *Bar {
+func NewBar(animationFrames map[string][]string) *Bar {
+	fmt.Printf("animationFrames(%v)\n", animationFrames)
 
-	//if 0 < len(animation.Status) {
-	//	bar.animation.Status = animation.Status
-	//}
+	fmt.Printf("\nanimationFrames(%v)\n", animationFrames)
+	fmt.Printf("len(animationFrames['fill'])(%v)\n", len(animationFrames["fill"]))
+	fmt.Printf("len(animationFrames['unfilled'])(%v)\n\n", len(animationFrames["unfilled"]))
 
-	//if 0 == len(animation.Format) {
+	fmt.Printf("\nanimationFrames != nil (%v)\n", animationFrames != nil)
+	fmt.Printf("len(animationFrames['fill']) == 0 (%v)\n", len(animationFrames["fill"]) != 0)
+	fmt.Printf("len(animationFrames['unfilled']) == 0 (%v)\n\n", len(animationFrames["unfilled"]) != 0)
 
-	//   animation.Format = " "
-	//}
-	//	bar.animation.Format = animation.Format
-	//}
-	//if 0 < len(animation.Fill) {
-	//	bar.animation.Fill = animation.Fill
-	//}
-	//// TODO: This is redundant if we are tracking progress
-	//if 0 < len(animation.Unfilled) {
-	//	bar.animation.Unfilled = animation.Unfilled
-	//}
+	if animationFrames != nil &&
+		(len(animationFrames["fill"]) == 0 ||
+			len(animationFrames["unfilled"]) == 0) {
+		animationFrames = map[string][]string{
+			"fill":     []string{"■"},
+			"unfilled": []string{"□"},
+		}
+	}
+
+	//_, runeWidth := utf8.DecodeRuneInString(animationFrames["fill"][0])
+
+	//runeProperties := width.LookupRune(bar.animation.Unfilled)
+
+	//rune, size := utf8.DecodeRune([]byte(bar.animation.Unfilled))
+
+	//runeProperties := width.LookupRune(bar.animation.Unfilled)
+
+	_, runeWidth := width.LookupString(animationFrames["fill"][0])
+	fmt.Printf("runeWidth(%v)\n", runeWidth)
 
 	bar := &Bar{
-		animationTick: 0,
-		ticker:        time.NewTicker(time.Millisecond * time.Duration(Fastest)),
-		end:           make(chan bool),
-		increment:     make(chan bool),
-		animation:     animation,
+		animationTick:  0,
+		ticker:         time.NewTicker(time.Millisecond * time.Duration(Fastest)),
+		end:            make(chan bool),
+		increment:      make(chan bool),
+		frames:         animationFrames,
+		runeWidth:      uint(runeWidth),
+		format:         FormatWithPercent(),
+		percentVisible: true,
 	}
 	bar.TerminalWidth()
 	return bar
 }
 
 func (bar *Bar) ShowPercent(show bool) *Bar {
-	bar.animation.HidePercent = show
-	return bar
-}
-
-// TODO: I kinda hate this function and I want to simplify it
-//
-//	this doesnt have fail conditions either, we could simply check against
-//	if the animation exists too
-func (bar *Bar) Animation(animation BarAnimation) *Bar {
-	bar.animation = animation
+	fmt.Printf("bar.ShowPercent(%v)\n", show)
+	bar.percentVisible = show
+	if show {
+		bar.format = FormatWithPercent()
+	} else {
+		bar.format = FormatWithoutPercent()
+	}
 	return bar
 }
 
@@ -93,24 +112,12 @@ func (bar *Bar) Length(length uint) *Bar {
 	return bar
 }
 
-func (bar *Bar) Fill(characters ...string) *Bar {
-	bar.animation.Fill = characters
-	return bar
-}
-
-func (bar *Bar) Unfilled(character string) *Bar {
-	bar.animation.Unfilled = character
-	return bar
-}
-
 func (bar *Bar) Status(message string) *Bar {
-	bar.animation.Status = message
+	bar.status = message
 	return bar
 }
 
-func (bar *Bar) Start() {
-	go bar.Animate()
-}
+func (bar *Bar) Start() { go bar.Animate() }
 
 // TODO: Remaining ticks becomes important if we use this for our while loop
 func (bar Bar) RemainingTicks() uint {
@@ -126,21 +133,17 @@ func (bar Bar) RemainingTicks() uint {
 // with dots we have more than just 1 dot and full dots.
 func (bar Bar) filled() string {
 	fill := strings.Repeat(
-		bar.animation.Fill[len(bar.animation.Fill)-1],
-		int(uint(bar.progress)/bar.animation.RuneWidth),
+		bar.frames["fill"][len(bar.frames["fill"])-1],
+		int(uint(bar.progress)/bar.runeWidth),
 	)
 	return fill
 }
 
 func (bar Bar) unfilled() string {
 
-	//rune, size := utf8.DecodeRune([]byte(bar.animation.Unfilled))
-
-	//runeProperties := width.LookupRune(bar.animation.Unfilled)
-
 	return strings.Repeat(
-		bar.animation.Unfilled,
-		int(bar.RemainingTicks()/bar.animation.RuneWidth),
+		bar.frames["unfilled"][0],
+		int(math.Floor(float64(bar.RemainingTicks()/bar.runeWidth))),
 	)
 }
 
@@ -167,41 +170,35 @@ func (bar *Bar) Frame() string {
 	// TODO: NOVERB is showing up after percent and would be in this frame
 	// function
 
-	// NOTE: Spinner animation at end of the loading bar
-	fill := bar.filled() + bar.animation.Fill[bar.animationTick]
-	if bar.animationTick < len(bar.animation.Fill)-1 {
+	// TODO
+	// Add optional spinner animation at end of the loading bar
+	fill := bar.filled() + bar.frames["fill"][bar.animationTick]
+	if bar.animationTick < len(bar.frames["fill"])-1 {
 		bar.animationTick += 1
 	} else {
 		bar.animationTick = 0
 	}
 
-	// TODO: There is a simpler way of doing this where we have only 1
-	// fmt.Sprintf( and the percent is just empty)
-	//if bar.animation.HidePercent {
-	//	return fmt.Sprintf(
-	//		"%v%v%v",
-	//		fill,
-	//		bar.unfilled(),
-
-	//		bar.animation.Status,
-	//	)
-	//}
-
-	return fmt.Sprintf(
-		bar.animation.Format,
-		fill,
-		bar.unfilled(),
-		bar.percent(),
-		bar.animation.Status,
-	)
+	if bar.percentVisible {
+		return fmt.Sprintf(
+			bar.format,
+			fill,
+			bar.unfilled(),
+			bar.percent(),
+			bar.status,
+		)
+	} else {
+		return fmt.Sprintf(
+			bar.format,
+			fill,
+			bar.unfilled(),
+			bar.status,
+		)
+	}
 }
 
-// TODO: Consider what conditions the ticker is necessary, when we wouldn't just
-// increment (possibly a loadingBar.Time(15s))
 func (bar *Bar) Animate() {
 	for {
-		// TODO: A ticker here would likely use less processor but test it to
-		// guarantee this is more than a guess
 		select {
 		case <-bar.end:
 			fmt.Printf("\n")
@@ -210,14 +207,14 @@ func (bar *Bar) Animate() {
 			fmt.Print(bar.Frame())
 		case <-bar.ticker.C:
 			fmt.Printf(bar.Frame())
-			//fmt.Print(bar.Frame())
 		}
 	}
 }
 
 func (bar *Bar) End() {
-	// TODO: This line is being repeated
-	bar.progress = float64(bar.length)
+	// TODO
+	// If enter is detected go back up or preferably disable CR
+	bar.progress = float64(100)
 	fmt.Print(EraseLine(2))
 	fmt.Print(ShowCursor())
 	fmt.Print(CursorStart(1))

@@ -2,12 +2,11 @@ package dots
 
 import (
 	color "github.com/multiverse-os/ansi/color"
-	loading "github.com/multiverse-os/loading"
 )
 
 // ⣿⣿⣿⣿⡟⣀⣀⣀⣀⣀⣀ 41%
-var Animation = loading.BarAnimation{
-	Fill: []string{
+var Animation = map[string][]string{
+	"fill": []string{
 		color.Gray("⡀"),
 		color.Gray("⡄"),
 		color.Gray("⡆"),
@@ -33,7 +32,5 @@ var Animation = loading.BarAnimation{
 		color.Silver("⡿"),
 		color.White("⣿"),
 	},
-	RuneWidth: 1,
-	Unfilled:  color.Black("⣀"),
-	Format:    " %s%s %0.2f %s",
+	"unfilled": []string{color.Black("⣀")},
 }

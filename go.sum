@@ -1,2 +1,4 @@
 github.com/multiverse-os/ansi v0.0.0-20230122075550-10efed87b9d4 h1:p+XBNkUPCBHf3fxTvcxGNZWNKIvBlTyVI33bgn/mBaw=
 github.com/multiverse-os/ansi v0.0.0-20230122075550-10efed87b9d4/go.mod h1:PD6H6rUJ4GvsipdGr0+zxn2pxLA7NCXOLDhPt7mnd/E=
+golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
+golang.org/x/text v0.13.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=
