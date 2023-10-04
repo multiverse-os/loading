@@ -206,7 +206,9 @@ func (bar *Bar) Frame() string {
 	// function
 
 	// TODO
-	// Add optional spinner animation at end of the loading bar
+	// Add optional spinner animation at end of the loading bar; could simplify
+	// the loading bar by having just filled and unfilled
+	// then have a spinner inbetween
 	if bar.animationTick < len(bar.frames["fill"])-1 {
 		bar.animationTick += 1
 	} else {
@@ -254,9 +256,10 @@ func (bar *Bar) Animate() {
 			fmt.Printf("\n")
 			return
 		case <-bar.increment:
-			fmt.Print(bar.Frame())
+			// TODO: THIS IS WHERE WE CAN ENSURE IT NEVER GOES OVER WIDTH LIMIT
+			fmt.Printf("%v", bar.Frame())
 		case <-bar.ticker.C:
-			fmt.Printf(bar.Frame())
+			fmt.Printf("%v", bar.Frame())
 		}
 	}
 }

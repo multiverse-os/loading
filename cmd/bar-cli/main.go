@@ -14,7 +14,7 @@ import (
 )
 
 func randomWait() {
-	time.Sleep(time.Duration(rand.Intn(50)+20) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(1)+3) * time.Second)
 }
 
 func main() {
@@ -30,13 +30,15 @@ func main() {
 
 func RunBarExampleWithoutPercent(animation map[string][]string) {
 	loadingBar := loading.NewBar(animation)
-	fmt.Printf("loadingBar(%v)\n", loadingBar)
 	loadingBar.ShowPercent(false)
+
+	fmt.Printf("loadingBar(%v)\n", loadingBar)
+
 	loadingBar.Start()
 
 	for 0 < loadingBar.RemainingTicks() {
 		randomWait()
-		loadingBar.Increment(1.5)
+		loadingBar.Increment(1)
 	}
 
 	loadingBar.Status(color.Green("Completed!")).End()
@@ -44,9 +46,10 @@ func RunBarExampleWithoutPercent(animation map[string][]string) {
 
 func RunBarExampleWithPercent(animation map[string][]string) {
 	loadingBar := loading.NewBar(animation)
-	fmt.Printf("loadingBar(%v)\n", loadingBar)
-	loadingBar.Start()
 
+	fmt.Printf("loadingBar(%v)\n", loadingBar)
+
+	loadingBar.Start()
 	for 0 < loadingBar.RemainingTicks() {
 		randomWait()
 		loadingBar.Increment(1.5)
