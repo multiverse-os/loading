@@ -1,6 +1,6 @@
 package circles
 
-var Animation = map[string][]string{
-	"fill":     []string{"⚪"},
-	"unfilled": []string{"⚫"},
+var Animation = []string{
+	0: "⚫",
+	1: "⚪",
 }

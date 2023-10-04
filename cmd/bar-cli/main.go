@@ -28,7 +28,7 @@ func main() {
 	RunBarExampleWithPercent(bigcircles.Animation)
 }
 
-func RunBarExampleWithoutPercent(animation map[string][]string) {
+func RunBarExampleWithoutPercent(animation []string) {
 	loadingBar := loading.NewBar(animation)
 	loadingBar.ShowPercent(false)
 
@@ -44,7 +44,7 @@ func RunBarExampleWithoutPercent(animation map[string][]string) {
 	loadingBar.Status(color.Green("Completed!")).End()
 }
 
-func RunBarExampleWithPercent(animation map[string][]string) {
+func RunBarExampleWithPercent(animation []string) {
 	loadingBar := loading.NewBar(animation)
 
 	fmt.Printf("loadingBar(%v)\n", loadingBar)

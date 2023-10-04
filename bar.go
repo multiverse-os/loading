@@ -11,19 +11,25 @@ import (
 // TODO: Add a cutoff to prevent more than the length of the screen being
 // printed or at least track the number of lines so we can clear it correctly
 // and never have a condition the screen renders a new frame on a new line.
+
+const (
+	Unfilled = 0
+	Filled   = 1
+)
+
 type Bar struct {
-	format         string
-	length         uint
-	progress       float64
-	animationTick  int
-	ticker         *time.Ticker
-	end            chan bool
-	increment      chan bool
-	runeWidth      uint
-	frames         map[string][]string
-	speed          uint
-	status         string
-	percentVisible bool
+	format        string
+	length        uint
+	progress      float64
+	animationTick int
+	ticker        *time.Ticker
+	end           chan bool
+	increment     chan bool
+	runeWidth     uint
+	frames        []string
+	speed         uint
+	status        string
+	percent       bool
 }
 
 // TODO
@@ -37,15 +43,7 @@ type Format struct {
 	Visible                 bool
 }
 
-func FormatWithPercent() string    { return " %s%s %0.2f%% %s" }
-func FormatWithoutPercent() string { return " %s%s %s" }
-
-func UndefinedBar() map[string][]string {
-	return map[string][]string{
-		"fill":     []string{},
-		"unfilled": []string{},
-	}
-}
+func UndefinedBar() []string { return []string{"", ""} }
 
 // TODO: This needs to take into consideration if there is a status or percent
 // and then base the length on that.
@@ -76,27 +74,23 @@ func (bar *Bar) TerminalWidth() *Bar {
 //	Spinner  *Spinner
 //}
 
-func NewBar(animationFrames map[string][]string) *Bar {
-	fmt.Printf("animationFrames(%v)\n", animationFrames)
+func NewBar(loadingFrames []string) *Bar {
+	fmt.Printf("loadingFrames(%v)\n", loadingFrames)
 
-	fmt.Printf("\nanimationFrames(%v)\n", animationFrames)
-	fmt.Printf("len(animationFrames['fill'])(%v)\n", len(animationFrames["fill"]))
-	fmt.Printf("len(animationFrames['unfilled'])(%v)\n\n", len(animationFrames["unfilled"]))
+	fmt.Printf("\nloadingFrames(%v)\n", loadingFrames)
+	fmt.Printf("len(loadingFrames[Filled])(%v)\n", len(loadingFrames[Filled]))
+	fmt.Printf("len(loadingFrames[Unfilled])(%v)\n\n", len(loadingFrames[Unfilled]))
 
-	fmt.Printf("\nanimationFrames != nil (%v)\n", animationFrames != nil)
-	fmt.Printf("len(animationFrames['fill']) == 0 (%v)\n", len(animationFrames["fill"]) != 0)
-	fmt.Printf("len(animationFrames['unfilled']) == 0 (%v)\n\n", len(animationFrames["unfilled"]) != 0)
+	fmt.Printf("\nloadingFrames != nil (%v)\n", loadingFrames != nil)
+	fmt.Printf("len(loadingFrames[Fill]) == 0 (%v)\n", len(loadingFrames[Filled]) != 0)
+	fmt.Printf("len(loadingFrames[Unfilled]) == 0 (%v)\n\n", len(loadingFrames[Unfilled]) != 0)
 
-	if animationFrames != nil &&
-		(len(animationFrames["fill"]) == 0 ||
-			len(animationFrames["unfilled"]) == 0) {
-		animationFrames = map[string][]string{
-			"fill":     []string{"■"},
-			"unfilled": []string{"□"},
-		}
+	if len(loadingFrames) == 0 &&
+		(len(loadingFrames[Filled]) == 0 || len(loadingFrames[Unfilled]) == 0) {
+		loadingFrames = []string{"□", "■"}
 	}
 
-	runeProperties, _ := width.Lookup([]byte(animationFrames["unfilled"][0]))
+	runeProperties, _ := width.Lookup([]byte(loadingFrames[Unfilled]))
 	fmt.Printf("runeProperties.Kind()(%v)\n", runeProperties.Kind())
 	fmt.Printf("\n\n")
 	var runeWidth int
@@ -113,27 +107,27 @@ func NewBar(animationFrames map[string][]string) *Bar {
 	// Ticker is for when we have a specific wait time known prior to creation of
 	// the loader. Otherwise we can simply increment manually
 	bar := &Bar{
-		status:         "",
-		animationTick:  0,
-		ticker:         time.NewTicker(time.Millisecond * time.Duration(Fastest)),
-		end:            make(chan bool),
-		increment:      make(chan bool),
-		frames:         animationFrames,
-		runeWidth:      uint(runeWidth),
-		format:         FormatWithPercent(),
-		percentVisible: true,
+		status:        "",
+		animationTick: 0,
+		end:           make(chan bool),
+		increment:     make(chan bool),
+		frames:        loadingFrames,
+		runeWidth:     uint(runeWidth),
+		format:        defaultFormat(),
+		percent:       true,
+		ticker:        time.NewTicker(time.Millisecond * time.Duration(Normal)),
 	}
 	bar.TerminalWidth()
 	return bar
 }
 
-func (bar *Bar) ShowPercent(show bool) *Bar {
-	bar.percentVisible = show
-	if show {
-		bar.format = FormatWithPercent()
-	} else {
-		bar.format = FormatWithoutPercent()
-	}
+func (bar *Bar) NewTicker(speed int) *Bar {
+	bar.ticker = time.NewTicker(time.Millisecond * time.Duration(speed))
+	return bar
+}
+
+func (bar *Bar) ShowPercent(visible bool) *Bar {
+	bar.percent = visible
 	return bar
 }
 
@@ -147,7 +141,11 @@ func (bar *Bar) Status(message string) *Bar {
 	return bar
 }
 
-func (bar *Bar) Start() { go bar.Animate() }
+func (bar *Bar) Start() {
+	go bar.Animate()
+	// TODO
+	// Turn the spinner on
+}
 
 // TODO: Remaining ticks becomes important if we use this for our while loop
 func (bar Bar) RemainingTicks() uint {
@@ -163,9 +161,11 @@ func (bar Bar) RemainingTicks() uint {
 // with dots we have more than just 1 dot and full dots.
 func (bar Bar) filled() string {
 	return strings.Repeat(
-		bar.frames["fill"][len(bar.frames["fill"])-1],
+		bar.frames[Filled],
 		int(uint(bar.progress)/bar.runeWidth),
-	) + bar.frames["fill"][bar.animationTick]
+	)
+	// TODO This is where we want to put our spinner or maybe separated further
+	//bar.frames["fill"][bar.animationTick]
 }
 
 // TODO
@@ -176,13 +176,9 @@ func (bar Bar) filled() string {
 //     is increasing and decreasing
 func (bar Bar) unfilled() string {
 	return strings.Repeat(
-		bar.frames["unfilled"][0],
+		bar.frames[Unfilled],
 		int(bar.RemainingTicks()/bar.runeWidth),
 	)
-}
-
-func (bar Bar) percent() float64 {
-	return (bar.progress / float64(bar.length)) * 100
 }
 
 func (bar *Bar) Increment(percent float64) bool {
@@ -202,64 +198,38 @@ func (bar *Bar) Frame() string {
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
 
-	// TODO: NOVERB is showing up after percent and would be in this frame
-	// function
+	return fmt.Sprintf(
+		bar.format,
+		bar.filled(),
+		bar.unfilled(),
+		(bar.percentStatus() + bar.status),
+	)
+}
 
-	// TODO
-	// Add optional spinner animation at end of the loading bar; could simplify
-	// the loading bar by having just filled and unfilled
-	// then have a spinner inbetween
-	if bar.animationTick < len(bar.frames["fill"])-1 {
-		bar.animationTick += 1
-	} else {
-		bar.animationTick = 0
-	}
+func defaultFormat() string { return " %s%s%s" }
 
-	// TODO
-	// Here is our problem with the flashing end item; it goes back and forth
-	// between difference of 3 total as the:
-	//   - filled increases
-	//   - unfilled decreases
-	//
-	//
-	//fmt.Printf(
-	//	"filled(%v) + unfilled(%v) = (%v) \n",
-	//	len(bar.filled()),
-	//	len(bar.unfilled()),
-	//	len(bar.filled())+len(bar.unfilled()),
-	//)
+func (bar Bar) percentage() float64 {
+	return ((bar.progress / float64(bar.length)) * 100)
+}
 
-	//fmt.Printf("bar.length(%v)\n", bar.length)
-
-	if bar.percentVisible {
-		return fmt.Sprintf(
-			bar.format,
-			bar.filled(),
-			bar.unfilled(),
-			bar.percent(),
-			bar.status,
-		)
-	} else {
-		return fmt.Sprintf(
-			bar.format,
-			bar.filled(),
-			bar.unfilled(),
-			bar.status,
-		)
-	}
+func (bar Bar) percentStatus() string {
+	return fmt.Sprintf(" %0.2f%% ", bar.percentage())
 }
 
 func (bar *Bar) Animate() {
 	for {
 		select {
 		case <-bar.end:
+			// TODO
+			// Fix the bar ending wrong value by putting it at 100%, with status
+			// message here before new line
 			fmt.Printf("\n")
 			return
 		case <-bar.increment:
 			// TODO: THIS IS WHERE WE CAN ENSURE IT NEVER GOES OVER WIDTH LIMIT
-			fmt.Printf("%v", bar.Frame())
+			fmt.Print(bar.Frame())
 		case <-bar.ticker.C:
-			fmt.Printf("%v", bar.Frame())
+			fmt.Print(bar.Frame())
 		}
 	}
 }
