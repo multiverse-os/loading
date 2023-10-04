@@ -10,6 +10,7 @@ import (
 	loading "github.com/multiverse-os/loading"
 	bigcircles "github.com/multiverse-os/loading/bars/bigcircles"
 	circles "github.com/multiverse-os/loading/bars/circles"
+	dots "github.com/multiverse-os/loading/bars/dots"
 )
 
 func randomWait() {
@@ -22,6 +23,7 @@ func main() {
 
 	fmt.Printf("Running 'circles' loading bar example:\n")
 
+	RunBarExampleWithPercent(dots.Animation)
 	RunBarExampleWithoutPercent(circles.Animation)
 	RunBarExampleWithPercent(bigcircles.Animation)
 }

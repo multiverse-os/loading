@@ -2,11 +2,10 @@ package loading
 
 import (
 	"fmt"
-	"math"
 	"strings"
 	"time"
 
-	width "golang.org/x/text/width"
+	"golang.org/x/text/width"
 )
 
 // TODO: Add a cutoff to prevent more than the length of the screen being
@@ -27,6 +26,17 @@ type Bar struct {
 	percentVisible bool
 }
 
+// TODO
+// Would like to support b/sec Kb/sec Mb/sec
+// Would like to support Time left MM:SS + HH:MM:SS
+type Format struct {
+	Before, After           string
+	Prefix, Suffix          string
+	RuneWidth               uint8
+	StatusLength, BarLength uint8
+	Visible                 bool
+}
+
 func FormatWithPercent() string    { return " %s%s %0.2f%% %s" }
 func FormatWithoutPercent() string { return " %s%s %s" }
 
@@ -39,6 +49,13 @@ func UndefinedBar() map[string][]string {
 
 // TODO: This needs to take into consideration if there is a status or percent
 // and then base the length on that.
+// Why not go all the way down to 8+ (9 = 8 spaces + 1 loading bar)
+// TODO
+// MUST Inlcude if percentage is shown; currently assumes it IS shown, so we
+// need to make modifications for cleaner output; in addition, we may want the
+// option to tell the loading bar how long our status messages will be, or
+// instead maybe load status messages into a slice or map, so we can use that
+// to determine maximum loading bar width
 func (bar *Bar) TerminalWidth() *Bar {
 	if TerminalWidth() < 20 {
 		return bar.Length(12)
@@ -50,6 +67,14 @@ func (bar *Bar) TerminalWidth() *Bar {
 // TODO: Add ability to run the loader for x amount of time to fill up, so we
 // have a simple interface with it and we don't have to deal with the loop
 // directly (but we should still be able to when we want to)
+
+// TODO: Maybe we should move to very basic on/off style and use spinner on the
+// edge
+//type Animation struct {
+//	Filled   rune
+//	Unfilled rune
+//	Spinner  *Spinner
+//}
 
 func NewBar(animationFrames map[string][]string) *Bar {
 	fmt.Printf("animationFrames(%v)\n", animationFrames)
@@ -71,18 +96,24 @@ func NewBar(animationFrames map[string][]string) *Bar {
 		}
 	}
 
-	//_, runeWidth := utf8.DecodeRuneInString(animationFrames["fill"][0])
+	runeProperties, _ := width.Lookup([]byte(animationFrames["unfilled"][0]))
+	fmt.Printf("runeProperties.Kind()(%v)\n", runeProperties.Kind())
+	fmt.Printf("\n\n")
+	var runeWidth int
+	switch runeProperties.Kind() {
+	case width.EastAsianWide, width.EastAsianFullwidth:
+		runeWidth = 2
+	case width.EastAsianAmbiguous, width.EastAsianNarrow, width.EastAsianHalfwidth:
+		runeWidth = 1
+	default: // Neutral
+		runeWidth = 1
+	}
 
-	//runeProperties := width.LookupRune(bar.animation.Unfilled)
-
-	//rune, size := utf8.DecodeRune([]byte(bar.animation.Unfilled))
-
-	//runeProperties := width.LookupRune(bar.animation.Unfilled)
-
-	_, runeWidth := width.LookupString(animationFrames["fill"][0])
-	fmt.Printf("runeWidth(%v)\n", runeWidth)
-
+	// NOTE
+	// Ticker is for when we have a specific wait time known prior to creation of
+	// the loader. Otherwise we can simply increment manually
 	bar := &Bar{
+		status:         "",
 		animationTick:  0,
 		ticker:         time.NewTicker(time.Millisecond * time.Duration(Fastest)),
 		end:            make(chan bool),
@@ -97,7 +128,6 @@ func NewBar(animationFrames map[string][]string) *Bar {
 }
 
 func (bar *Bar) ShowPercent(show bool) *Bar {
-	fmt.Printf("bar.ShowPercent(%v)\n", show)
 	bar.percentVisible = show
 	if show {
 		bar.format = FormatWithPercent()
@@ -132,18 +162,22 @@ func (bar Bar) RemainingTicks() uint {
 // TODO: This is where we are failing to do the animation correctly, where
 // with dots we have more than just 1 dot and full dots.
 func (bar Bar) filled() string {
-	fill := strings.Repeat(
+	return strings.Repeat(
 		bar.frames["fill"][len(bar.frames["fill"])-1],
 		int(uint(bar.progress)/bar.runeWidth),
-	)
-	return fill
+	) + bar.frames["fill"][bar.animationTick]
 }
 
+// TODO
+//
+//   - Why does unfilled count end on 45
+//
+//   - Why am I getting a flashing symbol at the end as if the unfilled count
+//     is increasing and decreasing
 func (bar Bar) unfilled() string {
-
 	return strings.Repeat(
 		bar.frames["unfilled"][0],
-		int(math.Floor(float64(bar.RemainingTicks()/bar.runeWidth))),
+		int(bar.RemainingTicks()/bar.runeWidth),
 	)
 }
 
@@ -151,11 +185,12 @@ func (bar Bar) percent() float64 {
 	return (bar.progress / float64(bar.length)) * 100
 }
 
-func (bar *Bar) Increment(progress float64) bool {
+func (bar *Bar) Increment(percent float64) bool {
 	if bar.RemainingTicks() == 0 {
 		return false
 	}
-	bar.progress += (float64(bar.length) / 100) * progress
+	incrementAmount := roundFloat((float64(bar.length) / 100 * percent), 2)
+	bar.progress += incrementAmount
 	bar.increment <- true
 	return true
 }
@@ -172,17 +207,32 @@ func (bar *Bar) Frame() string {
 
 	// TODO
 	// Add optional spinner animation at end of the loading bar
-	fill := bar.filled() + bar.frames["fill"][bar.animationTick]
 	if bar.animationTick < len(bar.frames["fill"])-1 {
 		bar.animationTick += 1
 	} else {
 		bar.animationTick = 0
 	}
 
+	// TODO
+	// Here is our problem with the flashing end item; it goes back and forth
+	// between difference of 3 total as the:
+	//   - filled increases
+	//   - unfilled decreases
+	//
+	//
+	//fmt.Printf(
+	//	"filled(%v) + unfilled(%v) = (%v) \n",
+	//	len(bar.filled()),
+	//	len(bar.unfilled()),
+	//	len(bar.filled())+len(bar.unfilled()),
+	//)
+
+	//fmt.Printf("bar.length(%v)\n", bar.length)
+
 	if bar.percentVisible {
 		return fmt.Sprintf(
 			bar.format,
-			fill,
+			bar.filled(),
 			bar.unfilled(),
 			bar.percent(),
 			bar.status,
@@ -190,7 +240,7 @@ func (bar *Bar) Frame() string {
 	} else {
 		return fmt.Sprintf(
 			bar.format,
-			fill,
+			bar.filled(),
 			bar.unfilled(),
 			bar.status,
 		)
