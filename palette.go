@@ -23,6 +23,20 @@ const (
 	Overline   sgr = 53
 )
 
+// 10	Primary (default) font
+// 11–19	Alternative font	Select alternative font n − 10
+// 20	Fraktur (Gothic)	Rarely supported
+// 21	Doubly underlined; or: not bold	Double-underline per ECMA-48,[5]: 8.3.117  but instead disables bold intensity on several terminals, including in the Linux kernel's console before version 4.17.[44]
+// 22	Normal intensity	Neither bold nor faint; color changes where intensity is implemented as such.
+// 23	Neither italic, nor blackletter
+// 24	Not underlined	Neither singly nor doubly underlined
+// 25	Not blinking	Turn blinking off
+// 26	Proportional spacing	ITU T.61 and T.416, not known to be used on terminals
+// 27	Not reversed
+// 28	Reveal	Not concealed
+// 29	Not crossed out
+
+// ///// This is simple 3-bit/4-bit color
 const (
 	Black sgr = iota
 	Red
@@ -33,6 +47,9 @@ const (
 	Cyan
 	White
 )
+
+// 39	Default foreground color	Implementation defined (according to standard)
+// 49	Default background color	Implementation defined (according to standard)
 
 const (
 	//Normal sgr = 0
@@ -46,6 +63,28 @@ const (
 	//HiBackground sgr = 100
 )
 
+////////////TODO not as important honestly, we can wait until its ANSI
+// only lib again
+//////////////////////////////////////////////
+// 8-bit color (256 colors) is done with 38/48
+
+//As 256-color lookup tables became common on graphic cards, escape sequences were added to select from a pre-defined set of 256 colors:[citation needed]
+//
+//ESC[38;5;⟨n⟩m Select foreground color      where n is a number from the table below
+//ESC[48;5;⟨n⟩m Select background color
+//  0-  7:  standard colors (as in ESC [ 30–37 m)
+//  8- 15:  high intensity colors (as in ESC [ 90–97 m)
+// 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+//232-255:  grayscale from dark to light in 24 steps
+
+////////////TODO LAST
+//
+//24-bit
+//As "true color" graphic cards with 16 to 24 bits of color became common, applications began to support 24-bit colors. Terminal emulators supporting setting 24-bit foreground and background colors with escape sequences include Xterm,[29] KDE's Konsole,[50][51] and iTerm, as well as all libvte based terminals,[52] including GNOME Terminal.[citation needed]
+//
+//ESC[38;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB foreground color
+//ESC[48;2;⟨r⟩;⟨g⟩;⟨b⟩ m Select RGB background color
+
 // ////////////////////////////////////////////////////////////////////////////
 // ANSI(Black, Bright, Background) => 0+60+40=100
 func style(attrs ...sgr) (sum sgr) {
@@ -53,8 +92,13 @@ func style(attrs ...sgr) (sum sgr) {
 	// maybe have color only support values within sensible color ranges
 
 	// so style will be below 10 only doing underline overline bold etc
+
 	for _, attr := range attrs {
-		sum += attr
+		// NOTE
+		// No failure on != 0, we auto provide reset
+		if attr != 0 {
+			sum += attr
+		}
 	}
 	return sum
 }
@@ -66,7 +110,24 @@ func style(attrs ...sgr) (sum sgr) {
 
 // TODO
 // and color will only support feasible color numbers
-func color(cName, cType sgr) sgr { return cName + cType }
+
+func decoration(dName sgr) sgr {
+	if (dName <= 1 && dName <= 9) &&
+		dName == 53 {
+		return style(dName)
+	}
+	return 0
+}
+
+func color(cName, cType sgr) sgr {
+	cStyle := cName + cType
+	// Normal Foreground + Background
+	if (30 <= cStyle && cStyle <= 50) ||
+		(90 <= cStyle && cStyle <= 110) {
+		return style(cName, cType)
+	}
+	return 0
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
