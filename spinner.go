@@ -148,8 +148,11 @@ func (spinner *Spinner) Frame() string {
 		fmt.Print(EraseLine(2))
 		fmt.Print(CursorStart(1))
 	}
-	fmt.Printf("spinner.animation(%v)\n", spinner.animation)
-	fmt.Printf("len(spinner.animation)(%v)\n", spinner.totalFrames())
+	//Text(strings.Join(spinner.animation, "")).sgr(style(Blue, Foreground)).String(),
+	fmt.Sprintf(
+		"spinner.animation(%v)\n",
+		Text("test").sgr(style(Black, Foreground)).String(),
+	)
 	spinner.animationIndex = increment(spinner.animationIndex, spinner.totalFrames())
 	if spinner.hasPalette() {
 		spinner.paletteIndex = increment(spinner.paletteIndex, spinner.totalPalette())
@@ -167,7 +170,6 @@ func (spinner *Spinner) Increment(skipFrames float64) bool {
 }
 
 func increment(tick, max int) int {
-	fmt.Printf("tick++(%v) max(%v)\n", tick, max)
 	tick++
 	if tick == max {
 		return 0

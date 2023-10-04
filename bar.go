@@ -38,16 +38,6 @@ type Bar struct {
 // TODO
 // Would like to support b/sec Kb/sec Mb/sec
 // Would like to support Time left MM:SS + HH:MM:SS
-type Format struct {
-	Before, After           string
-	Prefix, Suffix          string
-	RuneWidth               uint8
-	StatusLength, BarLength uint8
-	Visible                 bool
-}
-
-func UndefinedBar() []string { return []string{"", ""} }
-
 // TODO: This needs to take into consideration if there is a status or percent
 // and then base the length on that.
 // Why not go all the way down to 8+ (9 = 8 spaces + 1 loading bar)
@@ -78,16 +68,6 @@ func (bar *Bar) TerminalWidth() *Bar {
 //}
 
 func NewBar(loadingFrames []string) *Bar {
-	fmt.Printf("loadingFrames(%v)\n", loadingFrames)
-
-	fmt.Printf("\nloadingFrames(%v)\n", loadingFrames)
-	fmt.Printf("len(loadingFrames[Filled])(%v)\n", len(loadingFrames[Filled]))
-	fmt.Printf("len(loadingFrames[Unfilled])(%v)\n\n", len(loadingFrames[Unfilled]))
-
-	fmt.Printf("\nloadingFrames != nil (%v)\n", loadingFrames != nil)
-	fmt.Printf("len(loadingFrames[Fill]) == 0 (%v)\n", len(loadingFrames[Filled]) != 0)
-	fmt.Printf("len(loadingFrames[Unfilled]) == 0 (%v)\n\n", len(loadingFrames[Unfilled]) != 0)
-
 	if len(loadingFrames) == 0 &&
 		(len(loadingFrames[Filled]) == 0 || len(loadingFrames[Unfilled]) == 0) {
 		loadingFrames = []string{"□", "■"}
@@ -108,6 +88,7 @@ func NewBar(loadingFrames []string) *Bar {
 	// NOTE
 	// Ticker is for when we have a specific wait time known prior to creation of
 	// the loader. Otherwise we can simply increment manually
+	// TODO: How about just assign color to each filled and unfilled
 	bar := &Bar{
 		status:        "",
 		animationTick: 0,
@@ -199,6 +180,7 @@ func (bar *Bar) Increment(percent float64) bool {
 // TODO: Frame should probably take into account if the bar is overflowing into
 // a second line to prevent issues we were having before
 func (bar *Bar) Frame() string {
+	fmt.Sprintf("test %v", Text("test").sgr(style(Blue, Foreground)).String())
 	fmt.Print(HideCursor())
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
@@ -206,7 +188,7 @@ func (bar *Bar) Frame() string {
 	return fmt.Sprintf(
 		bar.format,
 		bar.filled()+bar.spinner.Frame(),
-		bar.unfilled(),
+		Text(bar.unfilled()).sgr(style(Black, Foreground)).String(),
 		bar.percentStatus()+bar.status,
 	)
 }
