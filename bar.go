@@ -5,7 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/text/width"
+	width "golang.org/x/text/width"
+
+	dots "github.com/multiverse-os/loading/spinners/dots"
 )
 
 // TODO: Add a cutoff to prevent more than the length of the screen being
@@ -21,6 +23,7 @@ type Bar struct {
 	format        string
 	length        uint
 	progress      float64
+	spinner       *Spinner
 	animationTick int
 	ticker        *time.Ticker
 	end           chan bool
@@ -91,8 +94,7 @@ func NewBar(loadingFrames []string) *Bar {
 	}
 
 	runeProperties, _ := width.Lookup([]byte(loadingFrames[Unfilled]))
-	fmt.Printf("runeProperties.Kind()(%v)\n", runeProperties.Kind())
-	fmt.Printf("\n\n")
+	//fmt.Printf("runeProperties.Kind()(%v)\n", runeProperties.Kind())
 	var runeWidth int
 	switch runeProperties.Kind() {
 	case width.EastAsianWide, width.EastAsianFullwidth:
@@ -112,10 +114,11 @@ func NewBar(loadingFrames []string) *Bar {
 		end:           make(chan bool),
 		increment:     make(chan bool),
 		frames:        loadingFrames,
+		spinner:       NewSpinner(dots.Animation).LoadingBar(true),
 		runeWidth:     uint(runeWidth),
 		format:        defaultFormat(),
 		percent:       true,
-		ticker:        time.NewTicker(time.Millisecond * time.Duration(Normal)),
+		ticker:        time.NewTicker(time.Millisecond * time.Duration(Average)),
 	}
 	bar.TerminalWidth()
 	return bar
@@ -143,6 +146,7 @@ func (bar *Bar) Status(message string) *Bar {
 
 func (bar *Bar) Start() {
 	go bar.Animate()
+
 	// TODO
 	// Turn the spinner on
 }
@@ -187,6 +191,7 @@ func (bar *Bar) Increment(percent float64) bool {
 	}
 	incrementAmount := roundFloat((float64(bar.length) / 100 * percent), 2)
 	bar.progress += incrementAmount
+	//bar.spinner.Increment(0)
 	bar.increment <- true
 	return true
 }
@@ -200,9 +205,9 @@ func (bar *Bar) Frame() string {
 
 	return fmt.Sprintf(
 		bar.format,
-		bar.filled(),
+		bar.filled()+bar.spinner.Frame(),
 		bar.unfilled(),
-		(bar.percentStatus() + bar.status),
+		bar.percentStatus()+bar.status,
 	)
 }
 

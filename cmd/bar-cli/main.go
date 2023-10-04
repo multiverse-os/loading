@@ -20,7 +20,6 @@ func randomWait() {
 func main() {
 	fmt.Printf("Loading Bar Example\n")
 	fmt.Printf("===================\n")
-
 	fmt.Printf("Running 'circles' loading bar example:\n")
 
 	RunBarExampleWithPercent(dots.Animation)
@@ -32,10 +31,7 @@ func RunBarExampleWithoutPercent(animation []string) {
 	loadingBar := loading.NewBar(animation)
 	loadingBar.ShowPercent(false)
 
-	fmt.Printf("loadingBar(%v)\n", loadingBar)
-
 	loadingBar.Start()
-
 	for 0 < loadingBar.RemainingTicks() {
 		randomWait()
 		loadingBar.Increment(1)
@@ -46,8 +42,6 @@ func RunBarExampleWithoutPercent(animation []string) {
 
 func RunBarExampleWithPercent(animation []string) {
 	loadingBar := loading.NewBar(animation)
-
-	fmt.Printf("loadingBar(%v)\n", loadingBar)
 
 	loadingBar.Start()
 	for 0 < loadingBar.RemainingTicks() {
