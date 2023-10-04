@@ -49,12 +49,23 @@ const (
 // ////////////////////////////////////////////////////////////////////////////
 // ANSI(Black, Bright, Background) => 0+60+40=100
 func style(attrs ...sgr) (sum sgr) {
+	// TODO: Here check for below 10, and if its below 10, only allow it, then
+	// maybe have color only support values within sensible color ranges
+
+	// so style will be below 10 only doing underline overline bold etc
 	for _, attr := range attrs {
 		sum += attr
 	}
 	return sum
 }
 
+//TODO
+// or maybe decoration and color that check for their specific ranges, and they
+// feed into style so you can put bold and black bckground by apssing each
+// decoration() and color() through style()
+
+// TODO
+// and color will only support feasible color numbers
 func color(cName, cType sgr) sgr { return cName + cType }
 
 ///////////////////////////////////////////////////////////////////////////////
