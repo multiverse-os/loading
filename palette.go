@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// /////////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////////
 // Attribute defines a single SGR Code
 type sgr uint8
 
@@ -76,6 +76,8 @@ const (
 //  8- 15:  high intensity colors (as in ESC [ 90–97 m)
 // 16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
 //232-255:  grayscale from dark to light in 24 steps
+//Grayscale colors
+//232	233	234	235	236	237	238	239	240	241	242	243	244	245	246	247	248	249	250	251	252	253	254	255
 
 ////////////TODO LAST
 //
@@ -147,16 +149,8 @@ func Text(str string) *text {
 	}
 }
 
-//func (txt *text) attribute(attr sgr) *text {
-//	txt.attrs = append(txt.attrs, attr)
-//	return txt
-//}
-
 func (txt *text) sgr(attrs ...sgr) *text {
-	//for _, attr := range txt.attrs {
-	//txt.attribute(attr)
 	txt.attrs = append(txt.attrs, attrs...)
-	//}
 	return txt
 }
 
@@ -169,8 +163,8 @@ func (txt text) profile() profile {
 }
 
 func (txt text) ansi() (str string) {
-	// TODO: SEMICOLON MUST ONLY BE ADDED
-	// IFFFFFF we are insertintg more than 1 ansi style, otherwise NOEN
+	// NOTE
+	// Semicolon is only used when combining multiple ANSI styles
 	for index, attr := range txt.attrs {
 		str += fmt.Sprintf("%v", attr)
 		if index != 0 {
@@ -199,7 +193,6 @@ const (
 	ANSI
 )
 
-//
 //func (p profile) String() string {
 //	switch p {
 //	case ANSI:
@@ -223,5 +216,3 @@ const (
 	// String Terminator
 	ST = ESC + `\`
 )
-
-///////////////////////////////////////////////////////////////////////////////

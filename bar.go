@@ -180,7 +180,6 @@ func (bar *Bar) Increment(percent float64) bool {
 // TODO: Frame should probably take into account if the bar is overflowing into
 // a second line to prevent issues we were having before
 func (bar *Bar) Frame() string {
-	fmt.Sprintf("test %v", Text("test").sgr(style(Blue, Foreground)).String())
 	fmt.Print(HideCursor())
 	fmt.Print(EraseLine(2))
 	fmt.Print(CursorStart(1))
