@@ -133,9 +133,9 @@ const (
 // ////////////////////////////////////////////////////////////////////////////
 // ANSI(Black, Bright, Background) => 0+60+40=100
 func style(attrs ...sgr) (sum sgr) {
-	// TODO: Here check for below 10, and if its below 10, only allow it, then
+	// TODO
+	// Here check for below 10, and if its below 10, only allow it, then
 	// maybe have color only support values within sensible color ranges
-
 	// so style will be below 10 only doing underline overline bold etc
 
 	for _, attr := range attrs {
@@ -227,6 +227,7 @@ func (txt text) String() string {
 	if txt.profile() == ASCII {
 		return txt.string
 	}
-	// TODO: This uses universal reset we want specific reset
+	// TODO
+	// This uses universal reset we want specific reset
 	return fmt.Sprintf("%s%sm%s%sm", CSI, txt.ansi(), txt.string, CSI+RESET)
 }
