@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	width "golang.org/x/text/width"
 )
 
 const (
@@ -35,40 +33,11 @@ type Bar struct {
 // TODO: This needs to take into consideration if there is a status or percent
 // and then base the length on that.
 // Why not go all the way down to 8+ (9 = 8 spaces + 1 loading bar)
-// TODO
-// MUST Inlcude if percentage is shown; currently assumes it IS shown, so we
-// need to make modifications for cleaner output; in addition, we may want the
-// option to tell the loading bar how long our status messages will be, or
-// instead maybe load status messages into a slice or map, so we can use that
-// to determine maximum loading bar width
-// TODO: Add ability to run the loader for x amount of time to fill up, so we
-// have a simple interface with it and we don't have to deal with the loop
-// directly (but we should still be able to when we want to)
-
-// TODO: Maybe we should move to very basic on/off style and use spinner on the
-// edge
-//type Animation struct {
-//	Filled   rune
-//	Unfilled rune
-//	Spinner  *Spinner
-//}
-
 func NewBar(animationFrames []string) *Bar {
 	if len(animationFrames) == 0 &&
 		(len(animationFrames[Filled]) == 0 ||
 			len(animationFrames[Unfilled]) == 0) {
 		animationFrames = DefaultBar()
-	}
-
-	runeProperties, _ := width.Lookup([]byte(animationFrames[Unfilled]))
-	var runeWidth int
-	switch runeProperties.Kind() {
-	case width.EastAsianWide, width.EastAsianFullwidth:
-		runeWidth = 2
-	case width.EastAsianAmbiguous, width.EastAsianNarrow, width.EastAsianHalfwidth:
-		runeWidth = 1
-	default: // Neutral
-		runeWidth = 1
 	}
 
 	// NOTE
@@ -82,7 +51,7 @@ func NewBar(animationFrames []string) *Bar {
 		increment:     make(chan bool),
 		animation:     animationFrames,
 		spinner:       NewSpinner(DefaultSpinner()).LoadingBar(true),
-		runeWidth:     uint(runeWidth),
+		runeWidth:     RuneWidth(animationFrames[Unfilled]),
 		format:        defaultFormat(),
 		percent:       true,
 		ticker:        time.NewTicker(time.Millisecond * time.Duration(Average)),
@@ -130,7 +99,8 @@ func (bar *Bar) Start() {
 	// Turn the spinner on
 }
 
-// TODO: Remaining ticks becomes important if we use this for our while loop
+// TODO
+// Remaining ticks becomes important if we use this for our while loop
 func (bar Bar) RemainingTicks() uint {
 	if float64(bar.length) <= bar.progress {
 		bar.progress = float64(bar.length)
@@ -140,7 +110,8 @@ func (bar Bar) RemainingTicks() uint {
 	}
 }
 
-// TODO: This is where we are failing to do the animation correctly, where
+// TODO
+// This is where we are failing to do the animation correctly, where
 // with dots we have more than just 1 dot and full dots.
 func (bar Bar) filled() string {
 	return strings.Repeat(
@@ -168,12 +139,12 @@ func (bar *Bar) Increment(percent float64) bool {
 	}
 	incrementAmount := roundFloat((float64(bar.length) / 100 * percent), 2)
 	bar.progress += incrementAmount
-	//bar.spinner.Increment(0)
 	bar.increment <- true
 	return true
 }
 
-// TODO: Frame should probably take into account if the bar is overflowing into
+// TODO
+// Frame should probably take into account if the bar is overflowing into
 // a second line to prevent issues we were having before
 func (bar *Bar) Frame() string {
 	fmt.Print(HideCursor())
@@ -208,7 +179,8 @@ func (bar *Bar) Animate() {
 			fmt.Printf("\n")
 			return
 		case <-bar.increment:
-			// TODO: THIS IS WHERE WE CAN ENSURE IT NEVER GOES OVER WIDTH LIMIT
+			// TODO
+			// THIS IS WHERE WE CAN ENSURE IT NEVER GOES OVER WIDTH LIMIT
 			fmt.Print(bar.Frame())
 		case <-bar.ticker.C:
 			fmt.Print(bar.Frame())

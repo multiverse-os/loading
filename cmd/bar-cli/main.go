@@ -5,8 +5,6 @@ import (
 	"math/rand"
 	"time"
 
-	color "github.com/multiverse-os/ansi/color"
-
 	loading "github.com/multiverse-os/loading"
 	bigcircles "github.com/multiverse-os/loading/bars/bigcircles"
 	circles "github.com/multiverse-os/loading/bars/circles"
@@ -20,7 +18,7 @@ func randomWait() {
 func main() {
 	fmt.Printf("Loading Bar Example\n")
 	fmt.Printf("===================\n")
-	fmt.Printf("Running 'circles' loading bar example:\n")
+	fmt.Printf("Running 'dots', 'circles', and 'bigcircles' loading bar example:\n")
 
 	RunBarExampleWithPercent(dots.Animation)
 	RunBarExampleWithoutPercent(circles.Animation)
@@ -37,7 +35,7 @@ func RunBarExampleWithoutPercent(animation []string) {
 		loadingBar.Increment(1)
 	}
 
-	loadingBar.Status(color.Green("Completed!")).End()
+	loadingBar.Status(loading.Text("Completed!").Color(loading.Green).String()).End()
 }
 
 func RunBarExampleWithPercent(animation []string) {
@@ -49,5 +47,5 @@ func RunBarExampleWithPercent(animation []string) {
 		loadingBar.Increment(1.5)
 	}
 
-	loadingBar.Status(color.Green("Completed!")).End()
+	loadingBar.Status(loading.Text("Completed!").Color(loading.Green).String()).End()
 }
