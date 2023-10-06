@@ -14,8 +14,7 @@ const (
 
 const (
 	RESET = "0"
-	// Escape character
-	//     \x1b[30m
+	// Escape character (Exmaple: \x1b[30m)
 	ESC = "\x1b"
 	// Bell
 	BEL = "\a"
@@ -29,7 +28,7 @@ const (
 
 // TODO: Eventually use our ANSI library potentially
 
-func render(value string) string { return ("\u001B[" + value) }
+func render(value string) string { return (CSI + value) }
 
 func EraseDisplay(code int) string { return render(strconv.Itoa(code) + "2J") }
 func EraseLine(code int) string    { return render(strconv.Itoa(code) + "K") }
