@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-//type Frame struct {
-//	Rune string
-//	Text
-//}
-
 // TODO: Consier complete message as assignable field in Spinner so it can be
 // automatically used when End() is called which is important for further
 // implementing the interface, palette will give us both rainbow-type effects
@@ -37,15 +32,17 @@ func NewSpinner(animation []string) *Spinner {
 	}
 }
 
-func (spinner *Spinner) hasPalette() bool { return len(spinner.palette) == 0 }
+func (spinner *Spinner) hasPalette() bool {
+	return len(spinner.palette) == 0
+}
 
 func (spinner *Spinner) LoadingBar(bar bool) *Spinner {
 	spinner.bar = bar
 	return spinner
 }
 
-func (spinner *Spinner) Animation(animation []string) *Spinner {
-	return NewSpinner(animation)
+func (spinner *Spinner) Animation(frames []string) {
+	spinner.animation = frames
 }
 
 func (spinner *Spinner) Start()  { go spinner.Animate() }
