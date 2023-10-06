@@ -12,15 +12,6 @@ const (
 	ANSI
 )
 
-//func (p profile) String() string {
-//	switch p {
-//	case ANSI:
-//		return "ansi"
-//	default:
-//		return "ascii"
-//	}
-//}
-
 const (
 	RESET = "0"
 	// Escape character
