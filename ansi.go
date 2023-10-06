@@ -29,7 +29,7 @@ const (
 
 // TODO: Eventually use our ANSI library potentially
 
-func render(value string) string { return (ESC + value) }
+func render(value string) string { return ("\u001B[" + value) }
 
 func EraseDisplay(code int) string { return render(strconv.Itoa(code) + "2J") }
 func EraseLine(code int) string    { return render(strconv.Itoa(code) + "K") }

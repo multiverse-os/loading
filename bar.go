@@ -94,9 +94,6 @@ func (bar *Bar) Status(message string) *Bar {
 
 func (bar *Bar) Start() {
 	go bar.Animate()
-
-	// TODO
-	// Turn the spinner on
 }
 
 // TODO
@@ -121,11 +118,9 @@ func (bar Bar) filled() string {
 }
 
 // TODO
-//
-//   - Why does unfilled count end on 45
-//
-//   - Why am I getting a flashing symbol at the end as if the unfilled count
-//     is increasing and decreasing
+// Why does unfilled count end on 45
+// Why am I getting a flashing symbol at the end as if the unfilled count
+// is increasing and decreasing
 func (bar Bar) unfilled() string {
 	return strings.Repeat(
 		bar.animation[Unfilled],
