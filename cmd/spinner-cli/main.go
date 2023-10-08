@@ -26,7 +26,7 @@ func main() {
 //   3) Palette([]string), expecting ansi colors to cycle through
 
 func MultiMessageSpinner() {
-	s := loading.NewSpinner(moon.Animation).Message("Loading...").Speed(loading.Normal)
+	s := loading.NewSpinner(moon.Animation).Message("Loading...").Speed(loading.Average)
 	s.Start()
 	randomWait()
 	randomWait()
