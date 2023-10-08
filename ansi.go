@@ -183,10 +183,10 @@ type text struct {
 	attrs []sgr
 }
 
-func Text(str string) *text {
+func Text(str string, attrs ...sgr) *text {
 	return &text{
 		string: str,
-		//attrs:  []sgr{},
+		attrs:  attrs,
 	}
 }
 

@@ -35,7 +35,7 @@ func RunBarExampleWithoutPercent(animation []string) {
 		loadingBar.Increment(1)
 	}
 
-	loadingBar.Status(loading.Text("Completed!").Color(loading.Green).String()).End()
+	loadingBar.Status(loading.Text("Completed!", loading.Green).String()).End()
 }
 
 func RunBarExampleWithPercent(animation []string) {
@@ -47,5 +47,5 @@ func RunBarExampleWithPercent(animation []string) {
 		loadingBar.Increment(1.5)
 	}
 
-	loadingBar.Status(loading.Text("Completed!").Color(loading.Green).String()).End()
+	loadingBar.Status(loading.Text("Completed!").String()).End()
 }
